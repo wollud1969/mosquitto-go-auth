@@ -148,7 +148,7 @@ func AuthPluginInit(keys []string, values []string, authOptsNum int) {
 
 	}
 
-	//Check if strict mode is set.
+	//Check if strict mode is set. If so, we must flush cache in case an acl was checked against a backend that differs from the authenticating one.
 	if strictMode, ok := authOpts["strict_mode"]; ok && strings.Replace(strictMode, " ", "", -1) == "true" {
 		log.Info("Strict mode set.")
 		commonData.StrictMode = true
@@ -385,8 +385,8 @@ func AuthPluginInit(keys []string, values []string, authOptsNum int) {
 		} else {
 			commonData.RedisCache = goredisClient
 			log.Infof("started cache redis client on DB %d", cache.DB)
-			//Check if cache must be reset
-			if cacheReset, ok := authOpts["cache_reset"]; ok && cacheReset == "true" {
+			//Check if cache must be reset (either by option or because we are in strict mode).
+			if cacheReset, ok := authOpts["cache_reset"]; (ok && cacheReset == "true") || commonData.StrictMode {
 				commonData.RedisCache.FlushDB()
 				log.Infof("flushed cache")
 			}
@@ -455,6 +455,10 @@ func AuthUnpwdCheck(username, password string) bool {
 					log.Debugf("user %s authenticated with backend %s", username, backend.GetName())
 				}
 
+			}
+
+			if authenticated && commonData.StrictMode {
+				strictMap[username] = bename
 			}
 
 		} else {
