@@ -73,6 +73,8 @@ func (h pbkdf2Hasher) Hash(password string) (string, error) {
 // passed passwordHash.
 // Reference: https://github.com/brocaar/chirpstack-application-server/blob/master/internal/storage/user.go#L458.
 func (h pbkdf2Hasher) Compare(password string, passwordHash string) bool {
+	log.Debugf("password: %s, passwordHash: %s", password, passwordHash)
+	
 	hashSplit := strings.Split(passwordHash, "$")
 
 	if len(hashSplit) != 5 {
@@ -108,7 +110,10 @@ func (h pbkdf2Hasher) Compare(password string, passwordHash string) bool {
 
 	keylen := len(hashedPassword)
 
-	return passwordHash == h.hashWithSalt(password, salt, iterations, algorithm, keylen)
+	var calculatedHash := h.hashWithSalt(password, salt, iterations, algorithm, keylen)
+	log.Debugf("givenHash: %s, calculatedHash: %s", passwordHash, calculatedHash)
+
+	return passwordHash == calculatedHash
 }
 
 // Reference: https://github.com/brocaar/chirpstack-application-server/blob/master/internal/storage/user.go#L432.
