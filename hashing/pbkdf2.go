@@ -110,7 +110,7 @@ func (h pbkdf2Hasher) Compare(password string, passwordHash string) bool {
 
 	keylen := len(hashedPassword)
 
-	var calculatedHash := h.hashWithSalt(password, salt, iterations, algorithm, keylen)
+	calculatedHash := h.hashWithSalt(password, salt, iterations, algorithm, keylen)
 	log.Debugf("givenHash: %s, calculatedHash: %s", passwordHash, calculatedHash)
 
 	return passwordHash == calculatedHash
